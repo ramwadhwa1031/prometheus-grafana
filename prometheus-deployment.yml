@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  
+  name: prom-deployment
+  labels:
+    app: prom-app
+spec:
+  selector:
+    matchLabels:
+      app: prom-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: prom-app
+    spec:
+      containers:
+      - image: d1031/prom:latest
+        name: prom-app-container
+        stdin: true
+        tty: true
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9090
+       
+        volumeMounts:
+          - name: prometheus-script
+            mountPath: /etc/prometheus/prometheus.yml
+            subPath: prometheus.yml  
+          - name: web-vol1
+            mountPath: /etc/prometheus/data
+      volumes:
+      - name: prometheus-script
+        configMap:
+          name: prom-script
+          defaultMode: 0744
+      - name: web-vol1
+        persistentVolumeClaim:
+          claimName: prom-pvc1
